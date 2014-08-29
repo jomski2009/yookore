@@ -8,14 +8,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * Controller to handle all push notifications
- * requests
+ * requests and related methods.
  *
  * @author Jome Akpoduado
  * @version 1.0.1
@@ -47,6 +44,20 @@ public class NotificationController {
         notificationService.sendNotification(notificationResource);
         return new ResponseEntity<>(notificationResource,
                 HttpStatus.OK);
+    }
+
+    @RequestMapping(value = "devices/add")
+    public ResponseEntity<String> addUserAndroidDevice(@RequestParam String regId, @RequestParam int userId) {
+        log.debug("Adding device with id: {}", regId);
+        String result = notificationService.addOrUpdateDeviceRegistration(userId, regId);
+        return new ResponseEntity<>(result, HttpStatus.OK);
+    }
+
+    @RequestMapping(value = "devices/remove")
+    public ResponseEntity<String> removeUserAndroidDevice(@RequestParam String regId, @RequestParam int userId) {
+        log.debug("Removing device with id: {}", regId);
+        String writeResult = notificationService.removeDeviceRegistration(regId, userId);
+        return new ResponseEntity<>(writeResult, HttpStatus.OK);
     }
 
 }

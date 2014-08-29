@@ -1,12 +1,16 @@
 package com.yookos.yookore.config;
 
+import com.yookos.yookore.domain.notification.NotificationResource;
 import com.yookos.yookore.rabbit.NotificationReceiver;
+import com.yookos.yookore.rabbit.PublicFigureNotificationReceiver;
 import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.amqp.rabbit.listener.adapter.MessageListenerAdapter;
+import org.springframework.amqp.support.converter.ClassMapper;
+import org.springframework.amqp.support.converter.DefaultClassMapper;
 import org.springframework.amqp.support.converter.JsonMessageConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -17,17 +21,27 @@ import org.springframework.core.env.Environment;
 public class RabbitMQConfig {
     public final static String notificationQueue = "push.notifications";
     public final static String activityQueue = "activity.messages";
+    public final static String publicFigureNotificationQueue = "pf.push.notifications";
 
     @Autowired
     Environment environment;
 
     @Bean
+    ClassMapper classMapper() {
+        DefaultClassMapper mapper = new DefaultClassMapper();
+        mapper.setDefaultType(NotificationResource.class);
+        return mapper;
+    }
+
+    @Bean
     JsonMessageConverter jsonMessageConverter() {
+        JsonMessageConverter converter = new JsonMessageConverter();
+        converter.setClassMapper(classMapper());
         return new JsonMessageConverter();
     }
 
     @Bean
-    CachingConnectionFactory connectionFactory(){
+    CachingConnectionFactory connectionFactory() {
         CachingConnectionFactory factory =
                 new CachingConnectionFactory(environment.getProperty("yookos.rabbitmq.host", "queue.yookos.com"));
         factory.setUsername("jomski");
@@ -66,18 +80,41 @@ public class RabbitMQConfig {
     }
 
     @Bean
+    Queue publicFigureQueue() {
+        return new Queue(publicFigureNotificationQueue, false);
+    }
+
+    @Bean
     NotificationReceiver notificationReceiver() {
         return new NotificationReceiver();
     }
 
     @Bean
-    MessageListenerAdapter notificationsListenerAdapter() {
-        return new MessageListenerAdapter(notificationReceiver(),jsonMessageConverter());
+    PublicFigureNotificationReceiver publicFigureNotificationReceiver() {
+        return new PublicFigureNotificationReceiver();
     }
+
+    @Bean
+    MessageListenerAdapter notificationsListenerAdapter() {
+        //return new MessageListenerAdapter(notificationReceiver(), jsonMessageConverter());
+        return new MessageListenerAdapter(notificationReceiver());
+
+    }
+
+    @Bean
+    MessageListenerAdapter publicFigureNotificationsListenerAdapter() {
+        return new MessageListenerAdapter(publicFigureNotificationReceiver(), jsonMessageConverter());
+    }
+
 
     @Bean
     Binding topicBinding() {
         return BindingBuilder.bind(notificationsQueue()).to(topicExchange()).with(notificationQueue);
+    }
+
+    @Bean
+    Binding pfTopicBinding() {
+        return BindingBuilder.bind(publicFigureQueue()).to(topicExchange()).with(publicFigureNotificationQueue);
     }
 
     @Bean
@@ -87,6 +124,16 @@ public class RabbitMQConfig {
         container.setQueueNames(notificationQueue);
         container.setMessageListener(notificationsListenerAdapter());
         return container;
+    }
+
+    @Bean
+    SimpleMessageListenerContainer publicFigureNotificationContainer(ConnectionFactory connectionFactory) {
+        SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();
+        container.setConnectionFactory(connectionFactory);
+        container.setQueueNames(publicFigureNotificationQueue);
+        container.setMessageListener(publicFigureNotificationsListenerAdapter());
+        return container;
+
     }
 
 

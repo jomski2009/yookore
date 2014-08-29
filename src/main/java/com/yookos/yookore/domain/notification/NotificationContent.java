@@ -49,4 +49,15 @@ public class NotificationContent {
     public void setAuthorId(long authorId) {
         this.authorId = authorId;
     }
+
+    @Override
+    public String toString() {
+        return "NotificationContent{" +
+                "senderDisplayName='" + senderDisplayName + '\'' +
+                ", authorId=" + authorId +
+                ", objectId=" + objectId +
+                ", objectType='" + objectType + '\'' +
+                ", alertMessage='" + alertMessage + '\'' +
+                '}';
+    }
 }

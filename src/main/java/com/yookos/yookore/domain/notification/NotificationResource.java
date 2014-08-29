@@ -1,7 +1,6 @@
 package com.yookos.yookore.domain.notification;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.yookos.yookore.domain.notification.Notification;
 
 /**
  * Created by jome on 2014/08/27.
@@ -27,5 +26,13 @@ public class NotificationResource {
 
     public void setCmd(String cmd) {
         this.cmd = cmd;
+    }
+
+    @Override
+    public String toString() {
+        return "NotificationResource{" +
+                "cmd='" + cmd + '\'' +
+                ", notification=" + notification +
+                '}';
     }
 }

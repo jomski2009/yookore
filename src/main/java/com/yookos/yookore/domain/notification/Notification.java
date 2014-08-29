@@ -19,4 +19,11 @@ public class Notification {
         this.content = content;
     }
 
+    @Override
+    public String toString() {
+        return "Notification{" +
+                "userId=" + userId +
+                ", content=" + content +
+                '}';
+    }
 }

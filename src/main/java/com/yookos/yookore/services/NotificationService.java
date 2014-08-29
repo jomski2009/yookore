@@ -1,6 +1,10 @@
 package com.yookos.yookore.services;
 
+import com.yookos.yookore.domain.AndroidDeviceRegistration;
+import com.yookos.yookore.domain.UserRelationship;
 import com.yookos.yookore.domain.notification.NotificationResource;
+
+import java.util.List;
 
 /**
  * Interface for all push notification services
@@ -8,6 +12,14 @@ import com.yookos.yookore.domain.notification.NotificationResource;
  */
 
 public interface NotificationService {
-    public void sendNotification(NotificationResource notificationResource);
-    public void sendPublicFigureNotification(NotificationResource notificationResource);
+    void sendNotification(NotificationResource notificationResource);
+    void sendPublicFigureNotification(NotificationResource notificationResource);
+
+    String addOrUpdateDeviceRegistration(int userId, String regId);
+
+    String removeDeviceRegistration(String regId, int userId);
+
+    void addDeviceToUserRelationship(List<AndroidDeviceRegistration> rows);
+
+    void addToUserRelationship(List<UserRelationship> recipients);
 }

@@ -2,7 +2,6 @@ package com.yookos.yookore.config;
 
 import com.google.gson.Gson;
 import org.json.simple.parser.JSONParser;
-import org.springframework.amqp.support.converter.JsonMessageConverter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
