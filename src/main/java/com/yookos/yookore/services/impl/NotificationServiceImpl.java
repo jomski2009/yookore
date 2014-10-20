@@ -79,6 +79,11 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
+    public void sendGroupNotification(NotificationResource notificationResource) {
+        sender.sendNotification(notificationResource, RabbitMQConfig.groupNotificationQueue);
+    }
+
+    @Override
     public String addOrUpdateDeviceRegistration(int userId, String regId) {
         return helper.addOrUpdateDeviceRegistration(userId, regId);
     }
@@ -235,7 +240,7 @@ public class NotificationServiceImpl implements NotificationService {
                 params.put("followerid", relationship.getFollowerid());
                 params.put("actorid", relationship.getActorid());
 
-                QueryResult<Map<String, Object>> queryResult = engine.query(cypherQuery, params);
+               engine.query(cypherQuery, params);
 
                 tx.success();
             } catch (Exception e) {

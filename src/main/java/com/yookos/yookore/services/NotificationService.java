@@ -16,6 +16,8 @@ public interface NotificationService {
     void sendNotification(NotificationResource notificationResource);
     void sendPublicFigureNotification(NotificationResource notificationResource);
 
+    void sendGroupNotification(NotificationResource notificationResource);
+
     String addOrUpdateDeviceRegistration(int userId, String regId);
 
     String removeDeviceRegistration(String regId, int userId);

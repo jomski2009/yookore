@@ -49,6 +49,18 @@ public class NotificationController {
                 HttpStatus.OK);
     }
 
+    @RequestMapping(value = "groups/push", method = RequestMethod.POST)
+    public HttpEntity sendGroupNotification(
+            @RequestBody NotificationResource notificationResource) {
+        log.debug("Received notification to send: {}", notificationResource);
+        notificationService.sendGroupNotification(notificationResource);
+        return new ResponseEntity<>(notificationResource,
+                HttpStatus.OK);
+    }
+
+
+
+
     @RequestMapping(value = "test", method = RequestMethod.POST)
     public HttpEntity sendTestNotification(
             @RequestBody NotificationResource notificationResource) {

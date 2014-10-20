@@ -1,6 +1,7 @@
 package com.yookos.yookore.config;
 
 import com.yookos.yookore.domain.notification.NotificationResource;
+import com.yookos.yookore.rabbit.GroupNotificationReceiver;
 import com.yookos.yookore.rabbit.NotificationReceiver;
 import com.yookos.yookore.rabbit.PublicFigureNotificationReceiver;
 import org.springframework.amqp.core.*;
@@ -22,6 +23,7 @@ public class RabbitMQConfig {
     public final static String notificationQueue = "yookore.push.notifications";
     public final static String activityQueue = "activity.messages";
     public final static String publicFigureNotificationQueue = "pf.push.notifications";
+    public final static String groupNotificationQueue = "groups.push.notifications";
 
     @Autowired
     Environment environment;
@@ -85,8 +87,18 @@ public class RabbitMQConfig {
     }
 
     @Bean
+    Queue groupNotificationQueue(){
+        return new Queue(groupNotificationQueue, false);
+    }
+
+    @Bean
     NotificationReceiver notificationReceiver() {
         return new NotificationReceiver();
+    }
+
+    @Bean
+    GroupNotificationReceiver groupNotificationReceiver(){
+        return  new GroupNotificationReceiver();
     }
 
     @Bean
@@ -104,6 +116,11 @@ public class RabbitMQConfig {
     @Bean
     MessageListenerAdapter publicFigureNotificationsListenerAdapter() {
         return new MessageListenerAdapter(publicFigureNotificationReceiver(), jsonMessageConverter());
+    }
+
+    @Bean
+    MessageListenerAdapter groupNotificationsListenerAdapter() {
+        return new MessageListenerAdapter(groupNotificationQueue(), jsonMessageConverter());
     }
 
 
@@ -132,6 +149,16 @@ public class RabbitMQConfig {
         container.setConnectionFactory(connectionFactory);
         container.setQueueNames(publicFigureNotificationQueue);
         container.setMessageListener(publicFigureNotificationsListenerAdapter());
+        return container;
+
+    }
+
+    @Bean
+    SimpleMessageListenerContainer groupNotificationContainer(ConnectionFactory connectionFactory) {
+        SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();
+        container.setConnectionFactory(connectionFactory);
+        container.setQueueNames(groupNotificationQueue);
+        container.setMessageListener(groupNotificationsListenerAdapter());
         return container;
 
     }

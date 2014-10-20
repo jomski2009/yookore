@@ -5,7 +5,6 @@ import com.yookos.yookore.domain.UserRelationship;
 import com.yookos.yookore.helpers.HelperUtils;
 import com.yookos.yookore.services.BatchUpdateService;
 import com.yookos.yookore.services.NotificationService;
-import org.omg.CORBA.Request;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +14,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.ws.rs.PathParam;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;

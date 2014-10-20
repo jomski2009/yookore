@@ -6,7 +6,6 @@ package com.yookos.yookore.controllers;
 
 import com.yookos.yookore.domain.Activity;
 import com.yookos.yookore.services.ActivityService;
-import com.yookos.yookore.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

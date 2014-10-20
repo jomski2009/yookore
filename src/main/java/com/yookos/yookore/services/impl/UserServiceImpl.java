@@ -1,21 +1,17 @@
 package com.yookos.yookore.services.impl;
 
-import com.yookos.yookore.domain.Activity;
 import com.yookos.yookore.domain.User;
 import com.yookos.yookore.services.UserService;
 import org.mongodb.morphia.Datastore;
-import org.mongodb.morphia.Key;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.rest.graphdb.RestAPIFacade;
 import org.neo4j.rest.graphdb.query.RestCypherQueryEngine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
