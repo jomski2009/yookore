@@ -1,2 +1,4 @@
 .idea
-yookore.iml
+.idea/libraries
+*.iml
+target

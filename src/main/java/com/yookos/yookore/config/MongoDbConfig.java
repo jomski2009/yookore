@@ -1,5 +1,7 @@
 package com.yookos.yookore.config;
 
+import com.mongodb.DB;
+import com.mongodb.DBCollection;
 import com.mongodb.MongoClient;
 import org.mongodb.morphia.AdvancedDatastore;
 import org.mongodb.morphia.Datastore;
@@ -31,9 +33,16 @@ public class MongoDbConfig {
     }
 
     @Bean
+    DB yookosdb(){
+        DB yookosdb = mongoClient().getDB("yookosreco");
+        return yookosdb;
+    }
+
+    @Bean
     Morphia morphia(){
         Morphia morphia = new Morphia();
-        morphia.mapPackage("com.yookos.yookore.domain");
+        morphia.mapPackage("com.yookos");
+
         return morphia;
     }
 

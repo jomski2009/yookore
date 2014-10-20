@@ -13,10 +13,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -31,7 +34,7 @@ public class PushNotificationHelper {
     private final static String GCM_KEY_URL = "https://android.googleapis.com/gcm/notification";
     private static final String GOOGLE_API_KEY = "key=AIzaSyClDqYSytbUpuCJYq6JMMRrfLcVJbuiPPY";
     private static final String GOOGLE_PROJECT_ID = "355368739731";
-    private static final String NOTIFICATION_KEY_PREFIX= "ymAnd_";
+    private static final String NOTIFICATION_KEY_PREFIX = "ymAnd_";
 
     @Autowired
     MongoClient client;
@@ -42,11 +45,15 @@ public class PushNotificationHelper {
     @Autowired
     Datastore ds;
 
+    @Autowired
+    ThreadPoolTaskExecutor taskExecutor;
 
-    public void doPush(AndroidPushNotificationData data){
+
+    public void doPush(AndroidPushNotificationData data) {
         DBCollection devices = client.getDB("yookosreco").getCollection("androidusers");
 
         NotificationResource resource = data.getNotificationResource();
+        //log.info("Notification: {}", resource);
 
         NotificationContent content = data.getNotificationResource().getNotification().getContent();
         Notification notification = new Notification();
@@ -68,6 +75,7 @@ public class PushNotificationHelper {
             msg.setOt(resource.getNotification().getContent().getObjectType());
         }
         msg.setS(resource.getNotification().getContent().getSenderDisplayName());
+        //msg.setS("");
         msg.setSi(resource.getNotification().getContent().getAuthorId());
         msg.setU(resource.getNotification().getUserId());
 
@@ -85,7 +93,7 @@ public class PushNotificationHelper {
                 pn.setNotification_key(notification_key);
 
                 ArrayList<String> registration_ids = (ArrayList<String>) o.get("registration_ids");
-                if (registration_ids != null) {
+                if (registration_ids != null && !registration_ids.isEmpty()) {
                     pn.setRegistration_ids(registration_ids);
 
                     String pushObject = gsonObject.toJson(pn);
@@ -94,8 +102,14 @@ public class PushNotificationHelper {
                     headers.set("Content-Type", MediaType.APPLICATION_JSON_VALUE);
                     headers.set("Authorization", GOOGLE_API_KEY);
                     //Add the project ID header here
-                    ResponseEntity<String> responseEntity = restTemplate.exchange(GCM_URL, HttpMethod.POST, new HttpEntity<>(pushObject, headers), String.class);
-                    log.info(responseEntity.getBody());
+                    log.info(pushObject);
+                    try {
+                        ResponseEntity<String> responseEntity = restTemplate.exchange(GCM_URL, HttpMethod.POST, new HttpEntity<>(pushObject, headers), String.class);
+                        log.info(responseEntity.getBody());
+
+                    } catch (HttpClientErrorException e) {
+                        log.error(e.getResponseBodyAsString());
+                    }
                 }
             }
         } else {
@@ -113,12 +127,15 @@ public class PushNotificationHelper {
     public void processNotifications(NotificationResource notification) {
         log.info(">>>>>>> Author id for notification: {}", notification.getNotification().getContent().getAuthorId());
 
+        long sender = notification.getNotification().getContent().getAuthorId();
+        long recipient = notification.getNotification().getUserId();
+
         DBObject relationship = client.getDB("yookosreco").getCollection("relationships")
-                .findOne(new BasicDBObject("actorid", notification.getNotification().getContent().getAuthorId())
-                        .append("followerid", notification.getNotification().getUserId())
+                .findOne(new BasicDBObject("actorid", sender)
+                        .append("followerid", recipient)
                         .append("hasdevice", true));
 
-        if (relationship != null) {
+        if (relationship != null && isNotBlocked(sender, recipient) && sender != recipient) {
             //log.info("Relationship: {}", relationship.toString());
             AndroidPushNotificationData data = new AndroidPushNotificationData(notification, notification.getNotification().getUserId());
             doPush(data);
@@ -126,7 +143,22 @@ public class PushNotificationHelper {
 
     }
 
-    public String addOrUpdateDeviceRegistration(int userId, String regId){
+    private boolean isNotBlocked(long sender, long recipient) {
+        DBCollection blockedList = client.getDB("yookosreco").getCollection("blockedlists");
+
+        List<Long> senderList = new ArrayList<>();
+        senderList.add(sender);
+        DBObject one = blockedList.findOne(new BasicDBObject("userid", recipient).append("blockedlist",
+                new BasicDBObject("$in", senderList.toArray())));
+        if (one != null) {
+            //Sender is in the list
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    public String addOrUpdateDeviceRegistration(int userId, String regId) {
         Gson gson = new Gson();
         DBCollection devices = client.getDB("yookosreco").getCollection("androidusers");
         String notificationKeyName = NOTIFICATION_KEY_PREFIX + userId;
@@ -167,7 +199,7 @@ public class PushNotificationHelper {
                         .append("notification_key", notificationKey)
                         .append("userid", userId)
                         .append("type", "android")
-                        .append("registration_ids", reg_ids ));
+                        .append("registration_ids", reg_ids));
                 log.info(writeResult.toString());
                 result = writeResult.toString();
 
@@ -244,7 +276,7 @@ public class PushNotificationHelper {
                             .append("notification_key", notificationKey)
                             .append("userid", reg.getUserid())
                             .append("type", "android")
-                            .append("registration_ids", reg_ids ));
+                            .append("registration_ids", reg_ids));
                     log.info(writeResult.toString());
 
                 } catch (ParseException e) {
@@ -282,5 +314,40 @@ public class PushNotificationHelper {
             }
         }
 
+    }
+
+    public void sendToChatServer(NotificationResource notification) {
+        // Set the cmd value to 'store'
+        SendToServer sendToServer = new SendToServer(notification);
+        taskExecutor.execute(sendToServer);
+
+    }
+
+    class SendToServer implements Runnable {
+        NotificationResource notification;
+
+        public SendToServer(NotificationResource notification) {
+            this.notification = notification;
+        }
+
+        @Override
+        public void run() {
+            notification.setCmd("store");
+            Gson gson = new Gson();
+            String json = gson.toJson(notification);
+
+            HttpEntity postObject = new HttpEntity(json);
+
+            long start = new Date().getTime();
+            ResponseEntity<String> result = restTemplate.exchange(URL_JSON, HttpMethod.POST, postObject, String.class);
+            long end = new Date().getTime();
+
+            long duration = end - start;
+
+            if (result != null) {
+                log.info("Returned result from chat server: {}", result.getStatusCode());
+                log.info("Operation took {} seconds", duration / 1000);
+            }
+        }
     }
 }

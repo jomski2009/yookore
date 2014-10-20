@@ -1,6 +1,7 @@
 package com.yookos.yookore.services;
 
 import com.yookos.yookore.domain.AndroidDeviceRegistration;
+import com.yookos.yookore.domain.CoreUserBlock;
 import com.yookos.yookore.domain.UserRelationship;
 import com.yookos.yookore.domain.notification.NotificationResource;
 
@@ -21,5 +22,17 @@ public interface NotificationService {
 
     void addDeviceToUserRelationship(List<AndroidDeviceRegistration> rows);
 
-    void addToUserRelationship(List<UserRelationship> recipients);
+    void addToUserRelationshipBatch(List<UserRelationship> recipients);
+
+    void processBlockList();
+
+    void blockUsersFromSending(CoreUserBlock coreUserBlock);
+
+    void unblockUsersFromSending(CoreUserBlock coreUserBlock);
+
+    NotificationResource sendTestNotification(NotificationResource notificationResource);
+
+    UserRelationship addToUserRelationship(UserRelationship userRelationship);
+
+    void deleteUserRelationship(UserRelationship userRelationship);
 }

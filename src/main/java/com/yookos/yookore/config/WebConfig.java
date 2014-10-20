@@ -50,7 +50,7 @@ public class WebConfig extends WebMvcConfigurerAdapter{
     public ThreadPoolTaskExecutor taskExecutor(){
         ThreadPoolTaskExecutor te = new  ThreadPoolTaskExecutor();
         te.setCorePoolSize(10);
-        te.setMaxPoolSize(20);
+        te.setMaxPoolSize(30);
 
         return te;
     }

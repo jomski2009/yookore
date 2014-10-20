@@ -1,5 +1,6 @@
 package com.yookos.yookore.controllers;
 
+import com.yookos.yookore.domain.CoreUserBlock;
 import com.yookos.yookore.domain.notification.NotificationResource;
 import com.yookos.yookore.services.NotificationService;
 import org.slf4j.Logger;
@@ -27,6 +28,8 @@ public class NotificationController {
     @Autowired
     NotificationService notificationService;
 
+    //Push notification endpoints
+
     @RequestMapping(method = RequestMethod.POST)
     public HttpEntity sendPublicFigureNotification(
             @RequestBody NotificationResource notificationResource) {
@@ -46,6 +49,18 @@ public class NotificationController {
                 HttpStatus.OK);
     }
 
+    @RequestMapping(value = "test", method = RequestMethod.POST)
+    public HttpEntity sendTestNotification(
+            @RequestBody NotificationResource notificationResource) {
+        log.info("Received notification to send: {}", notificationResource);
+        //NotificationResource resource = notificationService.sendTestNotification(notificationResource);
+        return new ResponseEntity<>(notificationResource,
+                HttpStatus.OK);
+    }
+
+
+    //Device registration endpoints.
+
     @RequestMapping(value = "devices/add")
     public ResponseEntity<String> addUserAndroidDevice(@RequestParam String regId, @RequestParam int userId) {
         log.debug("Adding device with id: {}", regId);
@@ -59,5 +74,23 @@ public class NotificationController {
         String writeResult = notificationService.removeDeviceRegistration(regId, userId);
         return new ResponseEntity<>(writeResult, HttpStatus.OK);
     }
+
+    //Notification Blocks
+    @RequestMapping(value = "blocklist/add")
+    public HttpEntity addToBlockList(@RequestBody CoreUserBlock coreUserBlock){
+        log.info("Received request to block: {}", coreUserBlock);
+        notificationService.blockUsersFromSending(coreUserBlock);
+        return new ResponseEntity(HttpStatus.OK);
+    }
+
+    @RequestMapping(value = "blocklist/delete")
+    public HttpEntity removeFromBlockList(@RequestBody CoreUserBlock coreUserBlock){
+        log.info("Received request to unblock: {}", coreUserBlock);
+        notificationService.unblockUsersFromSending(coreUserBlock);
+        return new ResponseEntity(HttpStatus.OK);
+    }
+
+
+
 
 }
