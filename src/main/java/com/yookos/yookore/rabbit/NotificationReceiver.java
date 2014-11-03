@@ -57,7 +57,7 @@ public class NotificationReceiver {
     }
 
     private boolean authorIsGloballyBlocked(long authorId) {
-        List<Long> id = new ArrayList<>();
+        List<Long> id = new ArrayList<Long>();
         id.add(authorId);
 
         DBCollection gbl = yookosdb.getCollection("globalblock");
@@ -76,11 +76,13 @@ public class NotificationReceiver {
         DBCollection pn = client.getDB("yookosreco").getCollection("processednotifications");
 
         DBObject one = pn.findOne(new BasicDBObject("userid", userid).append("objectid", objectid));
-        if (one != null && one.get("processed") == false) {
+        Boolean processed = (Boolean) one.get("processed");
+
+        if (one != null && processed == false) {
             return false;
         }
 
-        if (one != null && one.get("processed") == true) {
+        if (one != null && processed == true) {
             return true;
         }
 
@@ -124,7 +126,7 @@ public class NotificationReceiver {
                     .find(new BasicDBObject("actorid", notification.getNotification().getContent().getAuthorId()));
 
             for (DBObject obj : cursor) {
-                int followerid = (int) obj.get("followerid");
+                int followerid = (Integer) obj.get("followerid");
                 if ((boolean)obj.get("hasdevice")){
                     notification.getNotification().setUserId(followerid);
                     helper.processNotifications(notification);

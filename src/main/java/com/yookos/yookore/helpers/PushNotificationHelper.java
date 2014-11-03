@@ -135,12 +135,24 @@ public class PushNotificationHelper {
                         .append("followerid", recipient)
                         .append("hasdevice", true));
 
-        if (relationship != null && isNotBlocked(sender, recipient) && sender != recipient) {
+        if (relationship != null && isNotBlocked(sender, recipient) && sender != recipient && hasRecipientEnabledPushNotifications(recipient)) {
             //log.info("Relationship: {}", relationship.toString());
             AndroidPushNotificationData data = new AndroidPushNotificationData(notification, notification.getNotification().getUserId());
             doPush(data);
         }
 
+    }
+
+    /**
+     * Function to check if a user has enabled notifications on the server (and by extension, the CORE)
+     * @param recipient
+     * @return
+     */
+    private boolean hasRecipientEnabledPushNotifications(long recipient) {
+        DBCollection blockedList = client.getDB("yookosreco").getCollection("blockedlists");
+        DBObject result = blockedList.findOne(new BasicDBObject("userid", recipient));
+
+        return (boolean) result.get("notificationenabled");
     }
 
     private boolean isNotBlocked(long sender, long recipient) {

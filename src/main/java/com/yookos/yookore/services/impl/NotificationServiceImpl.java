@@ -4,6 +4,7 @@ import com.mongodb.*;
 import com.yookos.yookore.config.RabbitMQConfig;
 import com.yookos.yookore.domain.AndroidDeviceRegistration;
 import com.yookos.yookore.domain.CoreUserBlock;
+import com.yookos.yookore.domain.CoreUserStatus;
 import com.yookos.yookore.domain.UserRelationship;
 import com.yookos.yookore.domain.notification.NotificationResource;
 import com.yookos.yookore.helpers.PushNotificationHelper;
@@ -277,5 +278,17 @@ public class NotificationServiceImpl implements NotificationService {
         //TODO: We also need to do this in Neo4j as well...
     }
 
+    @Override
+    public void setNotificationStatus(CoreUserStatus coreUserStatus) {
+        DBCollection blockedList = client.getDB("yookosreco").getCollection("blockedlists");
+        blockedList.update(new BasicDBObject("userid", coreUserStatus.getUserID()), new BasicDBObject("$set", new BasicDBObject("notificationenabled", coreUserStatus.isEnabled())));
+    }
 
+    @Override
+    public boolean getNotificationStatus(long id) {
+        DBCollection blockedList = client.getDB("yookosreco").getCollection("blockedlists");
+        DBObject user = blockedList.findOne(new BasicDBObject("userid", id));
+
+        return (boolean) user.get("notificationenabled");
+    }
 }
