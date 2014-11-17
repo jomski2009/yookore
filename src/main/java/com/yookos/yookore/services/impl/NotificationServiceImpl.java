@@ -198,7 +198,6 @@ public class NotificationServiceImpl implements NotificationService {
                                     new BasicDBObject("blockedlist", Integer.parseInt(item.trim()))), true, false);
                 }
             }
-
         }
     }
 
@@ -281,7 +280,13 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     public void setNotificationStatus(CoreUserStatus coreUserStatus) {
         DBCollection blockedList = client.getDB("yookosreco").getCollection("blockedlists");
-        blockedList.update(new BasicDBObject("userid", coreUserStatus.getUserID()), new BasicDBObject("$set", new BasicDBObject("notificationenabled", coreUserStatus.isEnabled())));
+        WriteResult result = blockedList.update(
+                new BasicDBObject("userid", coreUserStatus.getUserID()),
+                new BasicDBObject("$set", new BasicDBObject("notificationenabled", coreUserStatus.isEnabled())),
+                true,
+                false
+        );
+        log.info("-- saved info: {}", result);
     }
 
     @Override
