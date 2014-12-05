@@ -2,6 +2,7 @@ package com.yookos.yookore.services;
 
 import com.yookos.yookore.domain.AndroidDeviceRegistration;
 import com.yookos.yookore.domain.CoreUserBlock;
+import com.yookos.yookore.domain.CoreUserStatus;
 import com.yookos.yookore.domain.UserRelationship;
 import com.yookos.yookore.domain.notification.NotificationResource;
 
@@ -37,4 +38,8 @@ public interface NotificationService {
     UserRelationship addToUserRelationship(UserRelationship userRelationship);
 
     void deleteUserRelationship(UserRelationship userRelationship);
+
+    void setNotificationStatus(CoreUserStatus coreUserStatus);
+
+    boolean getNotificationStatus(long id);
 }

@@ -1,6 +1,7 @@
 package com.yookos.yookore.controllers;
 
 import com.yookos.yookore.domain.CoreUserBlock;
+import com.yookos.yookore.domain.CoreUserStatus;
 import com.yookos.yookore.domain.notification.NotificationResource;
 import com.yookos.yookore.services.NotificationService;
 import org.slf4j.Logger;
@@ -102,7 +103,18 @@ public class NotificationController {
         return new ResponseEntity(HttpStatus.OK);
     }
 
+    //Notification Enable/Disable
+    @RequestMapping(value = "status", method = RequestMethod.POST)
+    public HttpEntity setNotificationStatus(@RequestBody CoreUserStatus coreUserStatus) {
+        log.info("Received request to set the notification status: {}", coreUserStatus);
+        notificationService.setNotificationStatus(coreUserStatus);
+        return new ResponseEntity(HttpStatus.OK);
+    }
 
-
-
+    @RequestMapping(value = "status/{id}", method = RequestMethod.GET)
+    public HttpEntity getNotificationStatus(@PathVariable("id") long id) {
+        log.info("Received request to set the notification status: {}", id);
+        boolean result = notificationService.getNotificationStatus(id);
+        return new ResponseEntity<>(result, HttpStatus.OK);
+    }
 }
