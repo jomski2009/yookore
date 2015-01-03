@@ -135,10 +135,16 @@ public class PushNotificationHelper {
                         .append("followerid", recipient)
                         .append("hasdevice", true));
 
+        //We need to create a special case for 2017 (pastorchrislive) and 3791 (pastor tomisin) to receive notifications
         if (relationship != null && isNotBlocked(sender, recipient) && sender != recipient && hasRecipientEnabledPushNotifications(recipient)) {
             //log.info("Relationship: {}", relationship.toString());
             AndroidPushNotificationData data = new AndroidPushNotificationData(notification, notification.getNotification().getUserId());
             doPush(data);
+        }else{
+            if (sender == recipient && (sender == 2017 || sender == 3791)){
+                AndroidPushNotificationData data = new AndroidPushNotificationData(notification, notification.getNotification().getUserId());
+                doPush(data);
+            }
         }
 
     }
