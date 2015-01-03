@@ -20,9 +20,9 @@ import org.springframework.core.env.Environment;
 
 @Configuration
 public class RabbitMQConfig {
-    public final static String notificationQueue = "test.yookore.push.notifications";
-    public final static String activityQueue = "test.activity.messages";
-    public final static String publicFigureNotificationQueue = "test.pf.push.notifications";
+    public final static String notificationQueue = "yookore.push.notifications";
+    public final static String activityQueue = "activity.messages";
+    public final static String publicFigureNotificationQueue = "pf.push.notifications";
     public final static String groupNotificationQueue = "groups.push.notifications";
 
     @Autowired

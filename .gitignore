@@ -7,3 +7,4 @@ atlassian-ide-plugin.xml
 build/
 gradle/
 *.bat
+application.properties

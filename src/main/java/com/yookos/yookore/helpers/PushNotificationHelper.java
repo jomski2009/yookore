@@ -152,7 +152,11 @@ public class PushNotificationHelper {
         DBCollection blockedList = client.getDB("yookosreco").getCollection("blockedlists");
         DBObject result = blockedList.findOne(new BasicDBObject("userid", recipient));
 
-        return (boolean) result.get("notificationenabled");
+        if(result != null){
+            return (boolean) result.get("notificationenabled");
+        }
+
+        return false;
     }
 
     private boolean isNotBlocked(long sender, long recipient) {
