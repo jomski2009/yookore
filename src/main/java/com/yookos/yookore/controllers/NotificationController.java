@@ -103,6 +103,14 @@ public class NotificationController {
         return new ResponseEntity(HttpStatus.OK);
     }
 
+    @RequestMapping(value = "blocklist/{id}", method = RequestMethod.GET)
+    public HttpEntity getBlockList(@PathVariable("id") long id) {
+        log.info("Receiving request to get block list for userID : {}", id);
+        CoreUserBlock result = notificationService.getListOfBlockedIDsForUser(id);
+        log.info("Result : {}", result.getUserID());
+        return new ResponseEntity<>(result, HttpStatus.OK);
+    }
+
     //Notification Enable/Disable
     @RequestMapping(value = "status", method = RequestMethod.POST)
     public HttpEntity setNotificationStatus(@RequestBody CoreUserStatus coreUserStatus) {
@@ -117,4 +125,6 @@ public class NotificationController {
         boolean result = notificationService.getNotificationStatus(id);
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
+
+
 }

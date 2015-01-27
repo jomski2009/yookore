@@ -296,4 +296,23 @@ public class NotificationServiceImpl implements NotificationService {
 
         return (boolean) user.get("notificationenabled");
     }
+
+    //2015-01-27
+    @Override
+    public CoreUserBlock getListOfBlockedIDsForUser(long id) {
+      DBCollection blockedList = client.getDB("yookosreco").getCollection("blockedlists");
+      DBObject user = blockedList.findOne(new BasicDBObject("userid", id));
+
+      List<Integer> list = (List<Integer>) user.get("blockedlist");
+
+      for(Integer i : list) {
+        log.info("processing {}", i);
+      }
+
+      CoreUserBlock userBlock = new CoreUserBlock();
+      userBlock.setUserID(id);
+      userBlock.setList(list.toString());
+
+      return userBlock;
+    }
 }

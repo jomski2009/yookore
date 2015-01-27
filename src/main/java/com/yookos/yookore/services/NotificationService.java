@@ -42,4 +42,6 @@ public interface NotificationService {
     void setNotificationStatus(CoreUserStatus coreUserStatus);
 
     boolean getNotificationStatus(long id);
+
+    CoreUserBlock getListOfBlockedIDsForUser(long id);
 }
