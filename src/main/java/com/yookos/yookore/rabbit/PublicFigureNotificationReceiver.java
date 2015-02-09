@@ -7,6 +7,8 @@ import com.mongodb.MongoClient;
 import com.yookos.yookore.domain.notification.AndroidPushNotificationData;
 import com.yookos.yookore.domain.notification.NotificationResource;
 import com.yookos.yookore.helpers.PushNotificationHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 
@@ -15,6 +17,8 @@ import org.springframework.core.env.Environment;
  * Created by jome on 2014/08/28.
  */
 public class PublicFigureNotificationReceiver {
+    Logger log = LoggerFactory.getLogger(this.getClass());
+
     @Autowired
     Environment environment;
 
@@ -25,9 +29,7 @@ public class PublicFigureNotificationReceiver {
     PushNotificationHelper helper;
 
     public void handleMessage(NotificationResource notification) {
-        if (!environment.containsProperty("can.receive.message") && environment.getProperty("can.receive.message").equals("false")) {
-            //Throw an exception here so the message can be requeued
-        }
+        log.info("Handling Public figure notification: {}", notification.getNotification());
 
         DBCursor cursor = client.getDB("yookosreco").getCollection("relationships")
                 .find(new BasicDBObject("actorid", notification.getNotification().getContent().getAuthorId())

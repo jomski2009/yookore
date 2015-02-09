@@ -43,9 +43,9 @@ public class NotificationReceiver {
         }
 
         //Has this notification already been processed?
-        if (alreadyProcessed(notification)) {
-            return;
-        }
+//        if (alreadyProcessed(notification)) {
+//            return;
+//        }
 
         if (notification.getNotification().getContent().getObjectType().equals("action")) {
             AndroidPushNotificationData data = new AndroidPushNotificationData(notification, notification.getNotification().getUserId());
@@ -108,9 +108,9 @@ public class NotificationReceiver {
         }
 
         //Has this notification already been processed?
-        if (alreadyProcessed(notification)) {
-            return;
-        }
+//        if (alreadyProcessed(notification)) {
+//            return;
+//        }
 
         if (notification.getNotification().getContent().getObjectType().equals("action") || notification.getNotification().getContent().getObjectType().equals("directmessage")) {
             // Check if the recipient is on the android device list

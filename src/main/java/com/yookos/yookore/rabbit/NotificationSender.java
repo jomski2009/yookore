@@ -39,7 +39,7 @@ public class NotificationSender {
 //        template.setExchange("yookos.notifications");
 //        template.convertAndSend(queueName, notification);
         taskExecutor.execute(new SendToQueue(notification, queueName));
-        taskExecutor.execute(new ProcessNotificationSave(notification));
+        //taskExecutor.execute(new ProcessNotificationSave(notification));
 
     }
 
@@ -61,9 +61,10 @@ public class NotificationSender {
 
             template.setExchange("yookos.notifications");
             if (!resource.getNotification().getContent().getObjectType().equals("discussion")){
+                log.info("Sending notification resource: {}", resource.getNotification());
                 template.convertAndSend(queueName, resource);
             }else{
-                log.info("Dropping discussion object type: {}", resource.getNotification().getContent());
+                //log.info("Dropping discussion object type: {}", resource.getNotification().getContent());
             }
         }
 
