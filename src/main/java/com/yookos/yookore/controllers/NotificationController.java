@@ -122,7 +122,7 @@ public class NotificationController {
     @RequestMapping(value = "status/{id}", method = RequestMethod.GET)
     public HttpEntity getNotificationStatus(@PathVariable("id") long id) {
         log.info("Received request to set the notification status: {}", id);
-        boolean result = notificationService.getNotificationStatus(id);
+        CoreUserStatus result = notificationService.getNotificationStatus(id);
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 

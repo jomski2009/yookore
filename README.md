@@ -17,5 +17,9 @@ Access the running application at "localhost:8081"
 ```
 **GET**     notification/status/{id}
 ```sh
-true
+{
+  "userID":"1234",
+  "username":"tcrews",
+  "enabled":true
+}
 ```

@@ -297,11 +297,15 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
-    public boolean getNotificationStatus(long id) {
+    public CoreUserStatus getNotificationStatus(long id) {
         DBCollection blockedList = client.getDB("yookosreco").getCollection("blockedlists");
         DBObject user = blockedList.findOne(new BasicDBObject("userid", id));
 
-        return (boolean) user.get("notificationenabled");
+        CoreUserStatus coreUserStatus = new CoreUserStatus();
+        coreUserStatus.setUserID(id);
+        coreUserStatus.setUsername("");
+        coreUserStatus.setEnabled((boolean)user.get("notificationenabled"));
+        return coreUserStatus;
     }
 
     //2015-01-27
