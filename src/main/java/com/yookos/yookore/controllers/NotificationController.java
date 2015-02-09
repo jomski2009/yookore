@@ -107,8 +107,8 @@ public class NotificationController {
     @RequestMapping(value = "status", method = RequestMethod.POST)
     public HttpEntity setNotificationStatus(@RequestBody CoreUserStatus coreUserStatus) {
         log.info("Received request to set the notification status: {}", coreUserStatus);
-        notificationService.setNotificationStatus(coreUserStatus);
-        return new ResponseEntity(HttpStatus.OK);
+        CoreUserStatus updatedUser = notificationService.setNotificationStatus(coreUserStatus);
+        return new ResponseEntity(updatedUser, HttpStatus.OK);
     }
 
     @RequestMapping(value = "status/{id}", method = RequestMethod.GET)

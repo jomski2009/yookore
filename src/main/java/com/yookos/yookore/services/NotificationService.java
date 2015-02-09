@@ -39,7 +39,7 @@ public interface NotificationService {
 
     void deleteUserRelationship(UserRelationship userRelationship);
 
-    void setNotificationStatus(CoreUserStatus coreUserStatus);
+    CoreUserStatus setNotificationStatus(CoreUserStatus coreUserStatus);
 
     boolean getNotificationStatus(long id);
 }

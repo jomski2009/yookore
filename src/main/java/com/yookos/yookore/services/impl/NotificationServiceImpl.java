@@ -278,7 +278,7 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
-    public void setNotificationStatus(CoreUserStatus coreUserStatus) {
+    public CoreUserStatus setNotificationStatus(CoreUserStatus coreUserStatus) {
         DBCollection blockedList = client.getDB("yookosreco").getCollection("blockedlists");
         WriteResult result = blockedList.update(
                 new BasicDBObject("userid", coreUserStatus.getUserID()),
@@ -286,7 +286,14 @@ public class NotificationServiceImpl implements NotificationService {
                 true,
                 false
         );
+
         log.info("-- saved info: {}", result);
+
+        DBObject dbUser = blockedList.findOne(new BasicDBObject("userid", coreUserStatus.getUserID()));
+        boolean userNotificationStatus = (boolean) dbUser.get("notificationenabled");
+        coreUserStatus.setEnabled(userNotificationStatus);
+
+        return coreUserStatus;
     }
 
     @Override
