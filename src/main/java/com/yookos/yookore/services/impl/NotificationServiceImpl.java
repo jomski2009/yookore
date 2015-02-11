@@ -278,7 +278,7 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
-    public void setNotificationStatus(CoreUserStatus coreUserStatus) {
+    public CoreUserStatus setNotificationStatus(CoreUserStatus coreUserStatus) {
         DBCollection blockedList = client.getDB("yookosreco").getCollection("blockedlists");
         WriteResult result = blockedList.update(
                 new BasicDBObject("userid", coreUserStatus.getUserID()),
@@ -286,14 +286,50 @@ public class NotificationServiceImpl implements NotificationService {
                 true,
                 false
         );
+
         log.info("-- saved info: {}", result);
+
+        DBObject dbUser = blockedList.findOne(new BasicDBObject("userid", coreUserStatus.getUserID()));
+        boolean userNotificationStatus = (boolean) dbUser.get("notificationenabled");
+        coreUserStatus.setEnabled(userNotificationStatus);
+
+        return coreUserStatus;
     }
 
     @Override
-    public boolean getNotificationStatus(long id) {
+    public CoreUserStatus getNotificationStatus(long id) {
         DBCollection blockedList = client.getDB("yookosreco").getCollection("blockedlists");
         DBObject user = blockedList.findOne(new BasicDBObject("userid", id));
 
-        return (boolean) user.get("notificationenabled");
+        CoreUserStatus coreUserStatus = new CoreUserStatus();
+        coreUserStatus.setUserID(id);
+        coreUserStatus.setUsername("");
+        coreUserStatus.setEnabled((boolean)user.get("notificationenabled"));
+        return coreUserStatus;
+    }
+
+    //2015-01-27
+    @Override
+    public CoreUserBlock getListOfBlockedIDsForUser(long id) {
+        DBCollection blockedList = client.getDB("yookosreco").getCollection("blockedlists");
+        DBObject user = blockedList.findOne(new BasicDBObject("userid", id));
+
+        List<Integer> list = (List<Integer>) user.get("blockedlist");
+
+        for(Integer i : list) {
+            log.info("processing {}", i);
+        }
+
+        CoreUserBlock userBlock = new CoreUserBlock();
+        userBlock.setUserID(id);
+        userBlock.setList(list.toString());
+
+        return userBlock;
+    }
+
+    @Override
+    public void addDeviceToUserRelationship() {
+        helper.addDeviceToUserRelationship();
+
     }
 }

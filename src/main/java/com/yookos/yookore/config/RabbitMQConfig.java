@@ -7,6 +7,7 @@ import com.yookos.yookore.rabbit.PublicFigureNotificationReceiver;
 import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
+import org.springframework.amqp.rabbit.core.ChannelAwareMessageListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.amqp.rabbit.listener.adapter.MessageListenerAdapter;
@@ -106,6 +107,7 @@ public class RabbitMQConfig {
         return new PublicFigureNotificationReceiver();
     }
 
+
     @Bean
     MessageListenerAdapter notificationsListenerAdapter() {
         //return new MessageListenerAdapter(notificationReceiver(), jsonMessageConverter());
@@ -140,6 +142,7 @@ public class RabbitMQConfig {
         container.setConnectionFactory(connectionFactory);
         container.setQueueNames(notificationQueue);
         container.setMessageListener(notificationsListenerAdapter());
+        container.setAcknowledgeMode(AcknowledgeMode.MANUAL);
         return container;
     }
 
@@ -149,6 +152,7 @@ public class RabbitMQConfig {
         container.setConnectionFactory(connectionFactory);
         container.setQueueNames(publicFigureNotificationQueue);
         container.setMessageListener(publicFigureNotificationsListenerAdapter());
+        container.setAcknowledgeMode(AcknowledgeMode.MANUAL);
         return container;
 
     }

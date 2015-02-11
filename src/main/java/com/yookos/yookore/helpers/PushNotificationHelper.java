@@ -109,6 +109,7 @@ public class PushNotificationHelper {
 
                     } catch (HttpClientErrorException e) {
                         log.error(e.getResponseBodyAsString());
+                        continue;
                     }
                 }
             }
@@ -140,8 +141,8 @@ public class PushNotificationHelper {
             //log.info("Relationship: {}", relationship.toString());
             AndroidPushNotificationData data = new AndroidPushNotificationData(notification, notification.getNotification().getUserId());
             doPush(data);
-        }else{
-            if (sender == recipient && (sender == 2017 || sender == 3791)){
+        } else {
+            if (sender == recipient && (sender == 2017 || sender == 3791)) {
                 AndroidPushNotificationData data = new AndroidPushNotificationData(notification, notification.getNotification().getUserId());
                 doPush(data);
             }
@@ -151,6 +152,7 @@ public class PushNotificationHelper {
 
     /**
      * Function to check if a user has enabled notifications on the server (and by extension, the CORE)
+     *
      * @param recipient
      * @return
      */
@@ -158,11 +160,11 @@ public class PushNotificationHelper {
         DBCollection blockedList = client.getDB("yookosreco").getCollection("blockedlists");
         DBObject result = blockedList.findOne(new BasicDBObject("userid", recipient));
 
-        if(result != null){
+        if (result != null) {
             return (boolean) result.get("notificationenabled");
         }
 
-        return false;
+        return true;
     }
 
     private boolean isNotBlocked(long sender, long recipient) {
@@ -192,6 +194,7 @@ public class PushNotificationHelper {
             //Found an entry. Update regid array
             log.info(device.toString());
             devices.update(device, new BasicDBObject("$addToSet", new BasicDBObject("registration_ids", regId)));
+            updateHasDevice(userId, true);
 
         } else {
             //No entry found. Create new
@@ -224,6 +227,7 @@ public class PushNotificationHelper {
                         .append("registration_ids", reg_ids));
                 log.info(writeResult.toString());
                 result = writeResult.toString();
+                updateHasDevice(userId, true);
 
             } catch (ParseException e) {
                 e.printStackTrace();
@@ -231,6 +235,16 @@ public class PushNotificationHelper {
         }
 
         return result;
+    }
+
+    private void updateHasDevice(int userId, boolean hasDevice) {
+        DBCollection relationships = client.getDB("yookosreco").getCollection("relationships");
+        WriteResult update = relationships.update(new BasicDBObject("userid", userId),
+                new BasicDBObject("$set", new BasicDBObject("hasdevice", hasDevice)),
+                false,
+                true);
+
+        log.info("Update results: {}", update.toString());
     }
 
     public String removeDeviceRegistration(String regId, int userId) {
@@ -343,6 +357,32 @@ public class PushNotificationHelper {
         SendToServer sendToServer = new SendToServer(notification);
         taskExecutor.execute(sendToServer);
 
+    }
+
+    public void addDeviceToUserRelationship() {
+        DBCollection relationships = client.getDB("yookosreco").getCollection("relationships");
+        DBCollection devices;
+        if (!client.getDB("yookosreco").collectionExists("androidusers")) {
+            client.getDB("yookosreco").createCollection("androidusers", null);
+            devices = client.getDB("yookosreco").getCollection("androidusers");
+        } else {
+            devices = client.getDB("yookosreco").getCollection("androidusers");
+        }
+
+        log.info("Initiating adding devices");
+
+        DBCursor deviceCursor = devices.find();
+
+        for (DBObject device : deviceCursor) {
+            if(device.get("userid").getClass() == Long.class){
+                long userid = (long) device.get("userid");
+                updateHasDevice((int) userid, true);
+            }else{
+                int userid = (int) device.get("userid");
+                updateHasDevice(userid, true);
+
+            }
+        }
     }
 
     class SendToServer implements Runnable {

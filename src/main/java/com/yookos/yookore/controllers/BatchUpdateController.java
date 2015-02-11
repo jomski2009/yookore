@@ -41,6 +41,15 @@ public class BatchUpdateController {
     @Autowired
     BatchUpdateService batchUpdateService;
 
+
+    @RequestMapping(value = "refreshdevices")
+    public ResponseEntity<Void> updateUserDevices() {
+
+        notificationService.addDeviceToUserRelationship();
+        return new ResponseEntity<>(HttpStatus.OK);
+
+    }
+
     @RequestMapping(value = "updatedevices", method = RequestMethod.POST)
     public ResponseEntity<Void> updateUserDevicesFromCSV(@RequestParam("file") MultipartFile file) {
         try {
@@ -103,10 +112,10 @@ public class BatchUpdateController {
                     String[] recipientData = r.split(";");
                     UserRelationship userrel = new UserRelationship();
                     userrel.setActorid(Integer.parseInt(recipientData[1]));
-                    userrel.setFollowerid(Integer.parseInt(recipientData[2]));
-                    userrel.setUsername(recipientData[3]);
-                    userrel.setEmail(recipientData[4]);
-                    userrel.setCreationdate(Long.parseLong(recipientData[5]));
+                    userrel.setFollowerid(Integer.parseInt(recipientData[0]));
+                    userrel.setUsername(recipientData[2]);
+                    userrel.setEmail(recipientData[3]);
+                    userrel.setCreationdate(Long.parseLong(recipientData[4]));
                     userrel.setHasdevice(false);
                     userrel.setRelationshipType(0);
 
@@ -129,6 +138,7 @@ public class BatchUpdateController {
 
     /**
      * Process notifications block list
+     *
      * @return
      */
     @RequestMapping("processblocks")
@@ -139,7 +149,6 @@ public class BatchUpdateController {
 
     /**
      * Process groups storage in Mongo
-     *
      */
     @RequestMapping(value = "processgroups", method = RequestMethod.POST)
     public ResponseEntity<Void> createGroupmemberships(
@@ -174,6 +183,7 @@ public class BatchUpdateController {
 
     /**
      * Proceess page storage in mongo
+     *
      * @param file
      * @return
      */
@@ -280,14 +290,14 @@ public class BatchUpdateController {
      * Adhoc stuff for mobile callback links
      * Given a page or a group displayname, return the group or page id
      */
-   @RequestMapping(value = "getplaceid/{placetype}/{displayname}", method = RequestMethod.GET)
-    public HttpEntity getPlaceId(@PathVariable("placetype") String placetype, @PathVariable("displayname") String displayname){
-       Map<String, Object> result = batchUpdateService.getPlaceId(placetype, displayname);
+    @RequestMapping(value = "getplaceid/{placetype}/{displayname}", method = RequestMethod.GET)
+    public HttpEntity getPlaceId(@PathVariable("placetype") String placetype, @PathVariable("displayname") String displayname) {
+        Map<String, Object> result = batchUpdateService.getPlaceId(placetype, displayname);
 
-       if (result.containsKey("errorcode")){
-           return new ResponseEntity(result, HttpStatus.OK);
-       }else{
-           return new ResponseEntity(result, HttpStatus.NOT_FOUND);
-       }
-   }
+        if (result.containsKey("errorcode")) {
+            return new ResponseEntity(result, HttpStatus.OK);
+        } else {
+            return new ResponseEntity(result, HttpStatus.NOT_FOUND);
+        }
+    }
 }
