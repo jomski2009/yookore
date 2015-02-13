@@ -103,18 +103,28 @@ public class NotificationController {
         return new ResponseEntity(HttpStatus.OK);
     }
 
+    @RequestMapping(value = "blocklist/{id}", method = RequestMethod.GET)
+    public HttpEntity getBlockList(@PathVariable("id") long id) {
+        log.info("Receiving request to get block list for userID : {}", id);
+        CoreUserBlock result = notificationService.getListOfBlockedIDsForUser(id);
+        log.info("Result : {}", result.getUserID());
+        return new ResponseEntity<>(result, HttpStatus.OK);
+    }
+
     //Notification Enable/Disable
     @RequestMapping(value = "status", method = RequestMethod.POST)
     public HttpEntity setNotificationStatus(@RequestBody CoreUserStatus coreUserStatus) {
         log.info("Received request to set the notification status: {}", coreUserStatus);
-        notificationService.setNotificationStatus(coreUserStatus);
-        return new ResponseEntity(HttpStatus.OK);
+        CoreUserStatus updatedUser = notificationService.setNotificationStatus(coreUserStatus);
+        return new ResponseEntity(updatedUser, HttpStatus.OK);
     }
 
     @RequestMapping(value = "status/{id}", method = RequestMethod.GET)
     public HttpEntity getNotificationStatus(@PathVariable("id") long id) {
         log.info("Received request to set the notification status: {}", id);
-        boolean result = notificationService.getNotificationStatus(id);
+        CoreUserStatus result = notificationService.getNotificationStatus(id);
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
+
+
 }
