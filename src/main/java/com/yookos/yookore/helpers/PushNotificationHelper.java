@@ -102,7 +102,7 @@ public class PushNotificationHelper {
                     headers.set("Content-Type", MediaType.APPLICATION_JSON_VALUE);
                     headers.set("Authorization", GOOGLE_API_KEY);
                     //Add the project ID header here
-                    log.info(pushObject);
+                    //log.info(pushObject);
                     try {
                         ResponseEntity<String> responseEntity = restTemplate.exchange(GCM_URL, HttpMethod.POST, new HttpEntity<>(pushObject, headers), String.class);
                         log.info(responseEntity.getBody());
@@ -126,7 +126,7 @@ public class PushNotificationHelper {
      * @param notification
      */
     public void processNotifications(NotificationResource notification) {
-        log.info(">>>>>>> Author id for notification: {}", notification.getNotification().getContent().getAuthorId());
+        //log.info(">>>>>>> Author id for notification: {}", notification.getNotification().getContent().getAuthorId());
 
         long sender = notification.getNotification().getContent().getAuthorId();
         long recipient = notification.getNotification().getUserId();
@@ -157,13 +157,24 @@ public class PushNotificationHelper {
      * @return
      */
     private boolean hasRecipientEnabledPushNotifications(long recipient) {
-        DBCollection blockedList = client.getDB("yookosreco").getCollection("blockedlists");
-        DBObject result = blockedList.findOne(new BasicDBObject("userid", recipient));
+//        DBCollection blockedList = client.getDB("yookosreco").getCollection("blockedlists");
+//        DBObject result = blockedList.findOne(new BasicDBObject("userid", recipient));
+//        log.info("Checking notification enabled status for recipient id: {}", recipient);
+//        try {
+//            if (result.get("notificationenabled") != null) {
+//                return (boolean) result.get("notificationenabled");
+//            }
+//
+//            return true;
+//        } catch (NullPointerException npe) {
+//            log.error("A null pointer exception was caught.");
+//            return true;
+//        }
 
-        if (result != null) {
-            return (boolean) result.get("notificationenabled");
-        }
-
+        //For now we will just be returning true as it seems that there is is a problem with the data 
+        //validation for this method.
+        //@Emile please investigate.
+        
         return true;
     }
 
@@ -192,7 +203,7 @@ public class PushNotificationHelper {
 
         if (device != null) {
             //Found an entry. Update regid array
-            log.info(device.toString());
+            //log.info(device.toString());
             devices.update(device, new BasicDBObject("$addToSet", new BasicDBObject("registration_ids", regId)));
             updateHasDevice(userId, true);
 
@@ -374,10 +385,10 @@ public class PushNotificationHelper {
         DBCursor deviceCursor = devices.find();
 
         for (DBObject device : deviceCursor) {
-            if(device.get("userid").getClass() == Long.class){
+            if (device.get("userid").getClass() == Long.class) {
                 long userid = (long) device.get("userid");
                 updateHasDevice((int) userid, true);
-            }else{
+            } else {
                 int userid = (int) device.get("userid");
                 updateHasDevice(userid, true);
 

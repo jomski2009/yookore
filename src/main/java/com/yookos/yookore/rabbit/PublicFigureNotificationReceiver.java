@@ -33,20 +33,6 @@ public class PublicFigureNotificationReceiver implements ChannelAwareMessageList
     @Autowired
     PushNotificationHelper helper;
 
-//    public void handleMessage(NotificationResource notification) {
-//        log.info("Handling Public figure notification: {}", notification.getNotification());
-//
-//        DBCursor cursor = client.getDB("yookosreco").getCollection("relationships")
-//                .find(new BasicDBObject("actorid", notification.getNotification().getContent().getAuthorId())
-//                        .append("hasdevice", true));
-//
-//        for (DBObject obj : cursor) {
-//            int followerid = (int) obj.get("followerid");
-//            AndroidPushNotificationData data = new AndroidPushNotificationData(notification, followerid);
-//            helper.doPush(data);
-//        }
-//    }
-
     @Override
     public void onMessage(Message message, Channel channel) throws Exception {
         Gson gson = new Gson();

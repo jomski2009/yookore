@@ -42,6 +42,8 @@ public class NotificationSender {
         //taskExecutor.execute(new ProcessNotificationSave(notification));
 
     }
+    
+    
 
     //This class is to counter the effect of sending username instead of displayName by Emile.
     class SendToQueue implements Runnable {

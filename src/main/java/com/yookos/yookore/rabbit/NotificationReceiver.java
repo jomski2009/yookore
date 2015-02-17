@@ -68,72 +68,6 @@ public class NotificationReceiver implements ChannelAwareMessageListener {
         return false;
     }
 
-//    public void handleMessage(byte[] bytes) {
-//        if (environment.containsProperty("can.receive.message") && environment.getProperty("can.receive.message").equals("false")) {
-//            try {
-//                throw new Exception("Not handling received message");
-//            } catch (Exception e) {
-//                log.info(e.getMessage());
-//            }
-//        }
-//
-//        log.info("This should not be reached if the exception was thrown...");
-//
-//        Gson gson = new Gson();
-//        NotificationResource notification = gson.fromJson(new String(bytes), NotificationResource.class);
-//
-//        log.info("Received notification: {}", notification);
-//
-//        if (notification.getCmd() == null) {
-//            return;
-//        }
-//
-//        //Is this notification from a global blocked sender?
-//        if (authorIsGloballyBlocked(notification.getNotification().getContent().getAuthorId())) {
-//            return;
-//        }
-//
-//        //Has this notification already been processed?
-////        if (alreadyProcessed(notification)) {
-////            return;
-////        }
-//
-//        if (notification.getNotification().getContent().getObjectType().equals("action") || notification.getNotification().getContent().getObjectType().equals("directmessage")) {
-//            // Check if the recipient is on the android device list
-//            if (recipientInDeviceList(notification.getNotification().getUserId())) {
-//                AndroidPushNotificationData data = new AndroidPushNotificationData(notification, notification.getNotification().getUserId());
-//                helper.doPush(data);
-//            }
-////            else {
-////                helper.sendToChatServer(notification);
-////            }
-//        } else {
-//            //This will tag on the userid to the notification object and then execute doPush
-//            DBCursor cursor = client.getDB("yookosreco").getCollection("relationships")
-//                    .find(new BasicDBObject("actorid", notification.getNotification().getContent().getAuthorId()));
-//
-//            for (DBObject obj : cursor) {
-//                int followerid = (Integer) obj.get("followerid");
-//                if ((boolean) obj.get("hasdevice")) {
-//                    notification.getNotification().setUserId(followerid);
-//                    helper.processNotifications(notification);
-//                } else {
-//                    //Send to chat server. First set cmd to store. Turned off until we sort out chat server.
-//                    //notification.getNotification().setUserId(followerid);
-//                    //helper.sendToChatServer(notification);
-//                }
-//            }
-//        }
-//
-//        long userid = notification.getNotification().getContent().getAuthorId();
-//        long objectid = notification.getNotification().getContent().getObjectId();
-//
-//
-//        WriteResult update = client.getDB("yookosreco").getCollection("processednotifications")
-//                .update(new BasicDBObject("userid", userid).append("objectid", objectid), new BasicDBObject("$set", new BasicDBObject("processed", true)));
-//        //log.info(update.toString());
-//    }
-
     private boolean recipientInDeviceList(long userId) {
         DBCollection deviceOwners = client.getDB("yookosreco").getCollection("androidusers");
         DBObject user = deviceOwners.findOne(new BasicDBObject("userid", userId));
@@ -150,15 +84,14 @@ public class NotificationReceiver implements ChannelAwareMessageListener {
 
         if (environment.containsProperty("can.receive.message") && environment.getProperty("can.receive.message").equals("false")) {
             channel.basicNack(message.getMessageProperties().getDeliveryTag(), false, true);
-            //log.info("Not handling received message: {}", message.getBody().toString());
+            log.info("Not handling received message: {}", message.getBody().toString());
             return;
-            //throw new Exception("Not handling received message");
         }
 
         Gson gson = new Gson();
         NotificationResource notification = gson.fromJson(new String(message.getBody()), NotificationResource.class);
 
-        log.info("Received notification: {}", notification);
+        log.info("About to process notification: {}", notification);
 
         if (notification.getCmd() == null) {
             channel.basicAck(message.getMessageProperties().getDeliveryTag(), false);
@@ -182,6 +115,7 @@ public class NotificationReceiver implements ChannelAwareMessageListener {
                 if (recipientInDeviceList(notification.getNotification().getUserId())) {
                     AndroidPushNotificationData data = new AndroidPushNotificationData(notification, notification.getNotification().getUserId());
                     helper.doPush(data);
+                    //helper.sendToChatServer(notification);
                 }
 //            else {
 //                helper.sendToChatServer(notification);
@@ -196,11 +130,18 @@ public class NotificationReceiver implements ChannelAwareMessageListener {
 
                     if ((boolean) obj.get("hasdevice")) {
                         notification.getNotification().setUserId(followerid);
-                        helper.processNotifications(notification);
+                        try{
+                            helper.processNotifications(notification);                            
+                        }catch (Exception e){
+                            e.printStackTrace();
+                            log.error("Caught Exception cause is: {}", e.getMessage());
+                            continue;
+                        }
+                        //helper.sendToChatServer(notification);
                     } else {
                         //Send to chat server. First set cmd to store. Turned off until we sort out chat server.
                         notification.getNotification().setUserId(followerid);
-                        helper.sendToChatServer(notification);
+                        //helper.sendToChatServer(notification);
                     }
                 }
             }
@@ -216,8 +157,14 @@ public class NotificationReceiver implements ChannelAwareMessageListener {
             log.info("Message received is: {}", notification.toString());
             channel.basicAck(message.getMessageProperties().getDeliveryTag(), false);
         } catch (Exception e) {
+            e.printStackTrace();
             //Something failed in the process, return the message back to the queue
-            channel.basicNack(message.getMessageProperties().getDeliveryTag(), false, true);
+            log.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+            log.info("Something failed");
+            log.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+            log.error(e.getCause().getMessage());
+            channel.basicAck(message.getMessageProperties().getDeliveryTag(), false);
+            //channel.basicNack(message.getMessageProperties().getDeliveryTag(), false, true);
 
         }
     }

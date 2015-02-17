@@ -7,7 +7,6 @@ import com.yookos.yookore.rabbit.PublicFigureNotificationReceiver;
 import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
-import org.springframework.amqp.rabbit.core.ChannelAwareMessageListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.amqp.rabbit.listener.adapter.MessageListenerAdapter;
@@ -21,10 +20,10 @@ import org.springframework.core.env.Environment;
 
 @Configuration
 public class RabbitMQConfig {
-    public final static String notificationQueue = "yookore.push.notifications";
+    public final static String notificationQueue = "push.notifications.all";
     public final static String activityQueue = "activity.messages";
-    public final static String publicFigureNotificationQueue = "pf.push.notifications";
-    public final static String groupNotificationQueue = "groups.push.notifications";
+    public final static String publicFigureNotificationQueue = "push.notifications.publicfigures";
+    public final static String groupNotificationQueue = "push.notifications.groups";
 
     @Autowired
     Environment environment;
@@ -88,7 +87,7 @@ public class RabbitMQConfig {
     }
 
     @Bean
-    Queue groupNotificationQueue(){
+    Queue groupNotificationQueue() {
         return new Queue(groupNotificationQueue, false);
     }
 
@@ -98,8 +97,8 @@ public class RabbitMQConfig {
     }
 
     @Bean
-    GroupNotificationReceiver groupNotificationReceiver(){
-        return  new GroupNotificationReceiver();
+    GroupNotificationReceiver groupNotificationReceiver() {
+        return new GroupNotificationReceiver();
     }
 
     @Bean
