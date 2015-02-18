@@ -157,8 +157,16 @@ public class PushNotificationHelper {
      * @return
      */
     private boolean hasRecipientEnabledPushNotifications(long recipient) {
-//        DBCollection blockedList = client.getDB("yookosreco").getCollection("blockedlists");
-//        DBObject result = blockedList.findOne(new BasicDBObject("userid", recipient));
+        DBCollection blockedList = client.getDB("yookosreco").getCollection("blockedlists");
+        DBObject result = blockedList.findOne(new BasicDBObject("userid", recipient));
+        
+        if (result == null){
+            log.info("Returning true. result was null");
+            return true;
+        }else{
+            log.info("Checking value of result. result for recipient {} was found", recipient);
+            return (boolean)result.get("notificationenabled");
+        }
 //        log.info("Checking notification enabled status for recipient id: {}", recipient);
 //        try {
 //            if (result.get("notificationenabled") != null) {
@@ -175,7 +183,6 @@ public class PushNotificationHelper {
         //validation for this method.
         //@Emile please investigate.
         
-        return true;
     }
 
     private boolean isNotBlocked(long sender, long recipient) {
