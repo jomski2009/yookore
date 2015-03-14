@@ -34,7 +34,7 @@ public class PushNotificationHelper {
     private final static String GCM_KEY_URL = "https://android.googleapis.com/gcm/notification";
     private static final String GOOGLE_API_KEY = "key=AIzaSyClDqYSytbUpuCJYq6JMMRrfLcVJbuiPPY";
     private static final String GOOGLE_PROJECT_ID = "355368739731";
-    private static final String NOTIFICATION_KEY_PREFIX = "ymAnd_";
+    private static final String NOTIFICATION_KEY_PREFIX = "yookmobile_";
 
     @Autowired
     MongoClient client;
@@ -102,13 +102,15 @@ public class PushNotificationHelper {
                     headers.set("Content-Type", MediaType.APPLICATION_JSON_VALUE);
                     headers.set("Authorization", GOOGLE_API_KEY);
                     //Add the project ID header here
-                    //log.info(pushObject);
+                    log.info(pushObject);
                     try {
                         ResponseEntity<String> responseEntity = restTemplate.exchange(GCM_URL, HttpMethod.POST, new HttpEntity<>(pushObject, headers), String.class);
-                        log.info(responseEntity.getBody());
+                        log.info("Response from Google: {}", responseEntity.getBody());
+                        log.info("Response Headers: {}", responseEntity.getHeaders().toString());
+                        //We should do something with the data when 
 
                     } catch (HttpClientErrorException e) {
-                        log.error(e.getResponseBodyAsString());
+                        log.error("Error from Google: {}", e.getResponseBodyAsString());
                         continue;
                     }
                 }
@@ -159,13 +161,13 @@ public class PushNotificationHelper {
     private boolean hasRecipientEnabledPushNotifications(long recipient) {
         DBCollection blockedList = client.getDB("yookosreco").getCollection("blockedlists");
         DBObject result = blockedList.findOne(new BasicDBObject("userid", recipient));
-        
-        if (result == null){
+
+        if (result == null) {
             log.info("Returning true. result was null");
             return true;
-        }else{
+        } else {
             log.info("Checking value of result. result for recipient {} was found", recipient);
-            return (boolean)result.get("notificationenabled");
+            return (boolean) result.get("notificationenabled");
         }
 //        log.info("Checking notification enabled status for recipient id: {}", recipient);
 //        try {
@@ -182,7 +184,7 @@ public class PushNotificationHelper {
         //For now we will just be returning true as it seems that there is is a problem with the data 
         //validation for this method.
         //@Emile please investigate.
-        
+
     }
 
     private boolean isNotBlocked(long sender, long recipient) {
@@ -232,6 +234,7 @@ public class PushNotificationHelper {
 
             ResponseEntity<String> responseEntity = restTemplate.exchange(GCM_KEY_URL, HttpMethod.POST, new HttpEntity<>(reqobj, headers), String.class);
             String notificationKeyResponse = responseEntity.getBody();
+            log.info("Google Response: {}", notificationKeyResponse);
             //Convert to json to extract the notification key value
             try {
                 JSONObject key = (JSONObject) new JSONParser().parse(notificationKeyResponse);
@@ -318,10 +321,11 @@ public class PushNotificationHelper {
                 headers.set("Authorization", GOOGLE_API_KEY);
                 headers.set("project_id", GOOGLE_PROJECT_ID);
 
-                ResponseEntity<String> responseEntity = restTemplate.exchange(GCM_KEY_URL, HttpMethod.POST, new HttpEntity<>(reqobj, headers), String.class);
-                String notificationKeyResponse = responseEntity.getBody();
-                //Convert to json to extract the notification key value
                 try {
+                    ResponseEntity<String> responseEntity = restTemplate.exchange(GCM_KEY_URL, HttpMethod.POST, new HttpEntity<>(reqobj, headers), String.class);
+                    String notificationKeyResponse = responseEntity.getBody();
+                    //Convert to json to extract the notification key value
+
                     JSONObject key = (JSONObject) new JSONParser().parse(notificationKeyResponse);
                     String notificationKey = key.get("notification_key").toString();
                     List<String> reg_ids = new ArrayList<>();
@@ -335,6 +339,7 @@ public class PushNotificationHelper {
 
                 } catch (ParseException e) {
                     e.printStackTrace();
+                    continue;
                 }
             }
         }

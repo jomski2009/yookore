@@ -12,6 +12,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Controller to handle all push notifications
  * requests and related methods.
@@ -93,7 +96,10 @@ public class NotificationController {
     public HttpEntity addToBlockList(@RequestBody CoreUserBlock coreUserBlock){
         log.info("Received request to block: {}", coreUserBlock);
         notificationService.blockUsersFromSending(coreUserBlock);
-        return new ResponseEntity(HttpStatus.OK);
+        Map<String, Object> message = new HashMap<>();
+        message.put("status", "request accepted");
+        return new ResponseEntity(message, HttpStatus.OK);
+        //return new ResponseEntity(HttpStatus.ACCEPTED);
     }
 
     @RequestMapping(value = "blocklist/delete")

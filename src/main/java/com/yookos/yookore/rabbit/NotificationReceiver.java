@@ -84,7 +84,7 @@ public class NotificationReceiver implements ChannelAwareMessageListener {
 
         if (environment.containsProperty("can.receive.message") && environment.getProperty("can.receive.message").equals("false")) {
             channel.basicNack(message.getMessageProperties().getDeliveryTag(), false, true);
-            log.info("Not handling received message: {}", message.getBody().toString());
+            //log.info("Not handling received message: {}", message.getBody().toString());
             return;
         }
 

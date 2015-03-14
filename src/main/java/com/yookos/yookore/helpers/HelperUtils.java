@@ -12,6 +12,6 @@ import org.springframework.stereotype.Component;
 public class HelperUtils {
     public static String sanitize(String string) {
         String result = string.replaceAll("\"", StringUtils.EMPTY);
-        return null;
+        return result;
     }
 }

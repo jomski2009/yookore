@@ -17,9 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * All endpoints to process batch data
@@ -55,28 +53,41 @@ public class BatchUpdateController {
         try {
             System.out.println("Starting update device csv processing...");
             List<AndroidDeviceRegistration> rows = new ArrayList<>();
+            //List<AndroidDeviceRegistration> rows = new ArrayList<>()t<>();
+            Set<Integer> existing_ids = new HashSet<>();
+            int currentRow = 0;
 
             if (!file.isEmpty()) {
                 String row;
                 BufferedReader br = new BufferedReader(new InputStreamReader(
                         file.getInputStream()));
                 while ((row = br.readLine()) != null) {
-                    //log.info("Row: {}",row);
-                    String[] sp = row.split(";");
-                    //log.info("Split string: {}", sp.toString());
+//                    log.info("Row: {}", row);
+                    String[] sp = row.split(",");
+                    log.info("Split string: {}", sp[0]);
+
+                    
                     if (!helper.sanitize(sp[0]).trim().equals("null")) {
-                        //System.out.println(sp[0]);
-                        int user_id = Integer.parseInt(helper.sanitize(sp[0]));
-                        String regid = sp[1];
-                        AndroidDeviceRegistration uadr = new AndroidDeviceRegistration();
-                        uadr.setGcm_regid(regid);
-                        uadr.setUserid(user_id);
-                        rows.add(uadr);
+                        int current_id = Integer.parseInt(helper.sanitize(sp[0]));
+                        if (current_id != currentRow){
+                            String regid = sp[1];
+                            AndroidDeviceRegistration uadr = new AndroidDeviceRegistration();
+                            uadr.setGcm_regid(regid);
+                            uadr.setUserid(current_id);
+                            rows.add(uadr);                            
+                        }else{
+                            log.info("Skipping duplicate id: {}", current_id);
+                        }
+                        currentRow = current_id;
                     }
                 }
                 br.close();
-
-
+                
+                for (AndroidDeviceRegistration item :rows){
+                    log.info(String.valueOf(item.getUserid()));
+                }
+                log.info("Number of rows: " + String.valueOf(rows.size()));
+                //log.info(rows.toString());
                 notificationService.addDeviceToUserRelationship(rows);
 
                 return new ResponseEntity<>(HttpStatus.CREATED);
