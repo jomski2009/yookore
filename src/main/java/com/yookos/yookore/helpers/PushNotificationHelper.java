@@ -259,8 +259,9 @@ public class PushNotificationHelper {
     }
 
     private void updateHasDevice(int userId, boolean hasDevice) {
+        log.info("Updating device data for {}", userId);
         DBCollection relationships = client.getDB("yookosreco").getCollection("relationships");
-        WriteResult update = relationships.update(new BasicDBObject("userid", userId),
+        WriteResult update = relationships.update(new BasicDBObject("followerid", userId),
                 new BasicDBObject("$set", new BasicDBObject("hasdevice", hasDevice)),
                 false,
                 true);

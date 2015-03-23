@@ -20,10 +20,10 @@ import org.springframework.core.env.Environment;
 
 @Configuration
 public class RabbitMQConfig {
-    public final static String notificationQueue = "push.notifications.all";
-    public final static String activityQueue = "activity.messages";
-    public final static String publicFigureNotificationQueue = "push.notifications.publicfigures";
-    public final static String groupNotificationQueue = "push.notifications.groups";
+    public final static String notificationQueue = "push.notifications.all.durable";
+    public final static String activityQueue = "activity.messages.durable";
+    public final static String publicFigureNotificationQueue = "push.notifications.publicfigures.durable";
+    public final static String groupNotificationQueue = "push.notifications.groups.durable";
 
     @Autowired
     Environment environment;
@@ -73,22 +73,22 @@ public class RabbitMQConfig {
 
     @Bean
     Queue notificationsQueue() {
-        return new Queue(notificationQueue, false);
+        return new Queue(notificationQueue, true);
     }
 
     @Bean
     Queue activityQueue() {
-        return new Queue(activityQueue, false);
+        return new Queue(activityQueue, true);
     }
 
     @Bean
     Queue publicFigureQueue() {
-        return new Queue(publicFigureNotificationQueue, false);
+        return new Queue(publicFigureNotificationQueue, true);
     }
 
     @Bean
     Queue groupNotificationQueue() {
-        return new Queue(groupNotificationQueue, false);
+        return new Queue(groupNotificationQueue, true);
     }
 
     @Bean
