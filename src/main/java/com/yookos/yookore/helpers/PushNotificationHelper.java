@@ -259,7 +259,7 @@ public class PushNotificationHelper {
     }
 
     private void updateHasDevice(int userId, boolean hasDevice) {
-        log.info("Updating device data for {}", userId);
+        log.info("Updating device data for {} with hasDevice: {}", userId, hasDevice);
         DBCollection relationships = client.getDB("yookosreco").getCollection("relationships");
         WriteResult update = relationships.update(new BasicDBObject("followerid", userId),
                 new BasicDBObject("$set", new BasicDBObject("hasdevice", hasDevice)),
@@ -395,7 +395,7 @@ public class PushNotificationHelper {
 
         log.info("Initiating adding devices");
 
-        DBCursor deviceCursor = devices.find();
+        DBCursor deviceCursor = devices.find(new BasicDBObject("userid", new BasicDBObject("$gt", 1000000).append("$lt", 2000000)));
 
         for (DBObject device : deviceCursor) {
             if (device.get("userid").getClass() == Long.class) {
