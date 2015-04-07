@@ -62,6 +62,12 @@ public class NotificationSender {
             resource = fixDisplayName(resource);
 
             template.setExchange("yookos.notifications");
+
+            // Emile - temporary block for notifications for comments on status updates.
+            if (resource.getNotification().getContent().getObjectType().equals("status-comment")) {
+                return;
+            }
+
             if (!resource.getNotification().getContent().getObjectType().equals("discussion")){
                 log.info("Sending notification resource: {}", resource.getNotification());
                 template.convertAndSend(queueName, resource);
