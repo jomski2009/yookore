@@ -11,9 +11,20 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
+
+import org.apache.commons.codec.binary.Base64;
+import org.springframework.http.HttpHeaders;
+
+import java.net.URI;
+import java.net.URISyntaxException;
+
 
 /**
  * Created by jome on 2014/08/27.
@@ -34,6 +45,9 @@ public class NotificationSender {
 
     @Autowired
     ThreadPoolTaskExecutor taskExecutor;
+
+    @Autowired
+    Environment environment;
 
     public void sendNotification(NotificationResource notification, String queueName) {
 //        template.setExchange("yookos.notifications");
@@ -78,9 +92,19 @@ public class NotificationSender {
 
         private NotificationResource fixDisplayName(NotificationResource resource) {
             long authorId = resource.getNotification().getContent().getAuthorId();
-            String entity = restTemplate.getForEntity("https://www.yookos.com/api/core/v3/people/" + authorId, String.class).getBody();
+            URI uri = null;
+
+            try {
+                uri = new URI("https://www.yookos.com/api/core/v3/people/" + authorId);
+            } catch (URISyntaxException e) {
+                e.printStackTrace();
+            }
+            HttpEntity<String> request = new HttpEntity<String>(getAuthorizationHeaders());
+            ResponseEntity<String> response = restTemplate.exchange(uri, HttpMethod.GET, request, String.class);
+
+            //String entity = restTemplate.getForEntity("https://www.yookos.com/api/core/v3/people/" + authorId, String.class).getBody();
             //Need to remove the throws stuff on top
-            String newEntity = entity.replace("throw 'allowIllegalResourceCall is false.';", "");
+            String newEntity = response.getBody().replace("throw 'allowIllegalResourceCall is false.';", "");
 
             JSONParser parser = new JSONParser();
             try {
@@ -92,6 +116,24 @@ public class NotificationSender {
                 e.printStackTrace();
             }
             return resource;
+        }
+
+        private String getCreds() {
+            String  username = environment.getProperty("admin.user"),
+                    password = environment.getProperty("admin.password");
+            String plainCreds = "carl_platt:therock2001";
+            byte[] plainCredsBytes = plainCreds.getBytes();
+            byte[] base64CredsBytes = Base64.encodeBase64(plainCredsBytes);
+            String base64Creds = new String(base64CredsBytes);
+
+            return base64Creds;
+        }
+
+        private HttpHeaders getAuthorizationHeaders() {
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("Authorization", "Basic " + getCreds());
+
+            return headers;
         }
     }
 
