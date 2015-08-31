@@ -126,7 +126,9 @@ public class NotificationReceiver implements ChannelAwareMessageListener {
                         .find(new BasicDBObject("actorid", notification.getNotification().getContent().getAuthorId()));
 
                 for (DBObject obj : cursor) {
-                    int followerid = (Integer) obj.get("followerid");
+                    String id = obj.get("followerid").toString();
+
+		    int followerid = Integer.parseInt(id);
 
                     if ((boolean) obj.get("hasdevice")) {
                         notification.getNotification().setUserId(followerid);
